@@ -1,8 +1,11 @@
-<nav class="navbar fixed-top navbar-dark bg-dark">
+<nav class="navbar fixed-top navbar-dark bg-dark navbar-expand-sm">
 	<a class="navbar-brand" href="{{url_for('main')}}">Main</a>
 	<ul class="navbar-nav mr-auto">
 		<li class="nav-item">
 			<a class="nav-item nav-link" href="{{ url_for('updateNewManga')}}">Update</a>
+		</li>
+		<li class="nav-item">
+			<a class="nav-item nav-link" href="{{ url_for('addManga')}}">Add</a>
 		</li>
 	</ul>
   </div>
