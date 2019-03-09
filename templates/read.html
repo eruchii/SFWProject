@@ -1,0 +1,19 @@
+<!doctype html>
+<head>
+	<meta charset="utf-8">
+	{% include 'import.html' %}
+	<title>{{ chapter.name }}</title>
+</head>
+<body>
+	<div class = "container">
+		<div class="col-12 ml-auto">
+			<div class="row">
+				<h4>{{ chapter.name }}</h4>
+					{% for img in chapter.images %}
+					<img class="mx-auto img-fluid d-block" src="{{img}}" ></img><br>
+					{% endfor %}
+				</div>
+			</div>
+		</div>
+	</div>
+</body>

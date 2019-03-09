@@ -1,0 +1,8 @@
+<nav class="col-2 d-sm-block bg-light sidebar">
+	<ul class="nav nav-pills">
+		<li class="nav-item">
+			<a class = "nav-link {% if request.path.split('/')[1]=='' %}{{'active'}}{% endif %}" href = "{{ url_for('main') }}">Main</a>
+		</li>
+	</ul>
+</nav>
+</div>
