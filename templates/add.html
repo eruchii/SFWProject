@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<html lang="en">
+
+	<head>
+		<meta charset="utf-8">
+		<title>Add new manga</title>
+        {% include "import.html" %}
+	</head>
+
+	<body>
+        {% include 'navbar.html' %}
+		<div class="container">
+			<div class="row">
+				<div class="col-12 ml-auto">
+					<div class="row">
+                        <div class="col-12">
+                            {% if status == 2 %}
+                            <h4>Thanh cong!</h4>
+                            {% endif %}
+                            {% if status == 1 %}
+                            <h4>That bai!</h4>
+                            {% endif %}
+                        </div>
+                        <div class="col-12">
+                            <form action="{{ url_for('addManga') }}" method="POST" class="form-inline">
+                                <div class="form-group center">
+                                    <label class="col-3 col-form-label" for="mangaUrl">Manga Url: </label>
+                                    <div class="col-6">
+                                        <input type="text" name="mangaUrl" id="mangaUrl" class="form-control">
+                                    </div>
+                                </div>
+                                <button type="submit" class="btn btn-primary">Add</button>
+                            </form>
+                        </div>
+
+					</div>
+	
+				</div>
+			</div>
+
+		</div>
+	</body>
+
+</html>

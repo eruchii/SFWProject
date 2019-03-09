@@ -17,8 +17,8 @@
 					<div class="row">
 						{% for i in range(column*4*(page-1), min(column*4*page,manga|length)) %}
 						<div class="col-3 portfolio-item">
-							<a href="{{ url_for('mangaInfo', mangaId = i) }}">
-								<img class="card-img-top img-responsive img-home" src="{{manga[i].thumb}}}" alt="">
+							<a href="{{ url_for('mangaInfo', mangaId = manga[i].id) }}">
+								<img class="card-img-top img-responsive img-home" src="{{manga[i].thumb}}" alt="">
 							</a>
 						</div>
 						{% endfor %}
