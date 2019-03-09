@@ -24,7 +24,7 @@ def update():
     global manga
     global IDs
     followingManga = [x.strip("\n") for x in open("following.txt","r").readlines()]
-    followingManga = list(set(followingManga))
+    followingManga = list(set(followingManga)).sort()
     manga = [blogtruyen.Manga(x) for x in followingManga if "blogtruyen" in x]
     with open("following.txt","w") as f:
         for x in manga:
