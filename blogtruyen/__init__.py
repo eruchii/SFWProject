@@ -10,6 +10,16 @@ class Chapter:
         self.soup = BeautifulSoup(self.request.content, "html.parser")
         self.name = self.getName()
         self.images = self.getImageList()
+        self.prevChapter = None
+        self.nextChapter = None
+        try:
+            self.nextChapter = self.soup.find("link", rel = "Next")["href"].replace("https://blogtruyen.com/","").replace("/","-")
+        except:
+            pass
+        try:
+            self.prevChapter = self.soup.find("link", rel = "Prev")["href"].replace("https://blogtruyen.com/","").replace("/","-")
+        except:
+            pass
 
     def getImageList(self):
         lst = []
@@ -32,9 +42,10 @@ class Manga:
         self.thumb = self.soup.find("meta", property="og:image")["content"]
         self.id = url.split("/")[3]
         self.chapterCount = len(self.chapterList)
+        self.lastUpdate = self.soup.find("span", class_="color-green").string
     def getChapterList(self):
         pF = self.soup.find("div", id = "list-chapters").findAll("p")
-        lst = [ {'id': x.find("a")["href"].split("/")[1],'name':x.find("a")["title"], 'url':"https://blogtruyen.com" + x.find("a")["href"], 'date':x.find("span", class_='publishedDate').string} for x in pF]
+        lst = [ {'id': x.find("a")["href"].split("/")[1],'name':x.find("a")["title"], 'url':x.find("a")["href"].replace("/","-")[1:], 'date':x.find("span", class_='publishedDate').string} for x in pF]
         return lst
 
 def main():

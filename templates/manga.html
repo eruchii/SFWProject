@@ -36,7 +36,7 @@
 							<tbody>
 								{% for i in range(0, manga.chapterCount) %}
 							  <tr>
-									<td> <a href="{{ url_for('read', chapterId = manga.chapterList[i]['id']) }}">{{ manga.chapterList[i]['name'] }}</a></td>
+									<td> <a href="{{ url_for('read', chapterId = manga.chapterList[i]['url']) }}">{{ manga.chapterList[i]['name'] }}</a></td>
 									<td>{{ manga.chapterList[i]['date'] }}</td>
 								</tr>
 								{% endfor %}

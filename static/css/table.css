@@ -8,3 +8,11 @@ body {
 .img-home{
     max-height: 400px;
 }
+
+.img-display{
+  object-fit: contain;
+}
+
+.img-read{
+  padding-top: 15px;
+}

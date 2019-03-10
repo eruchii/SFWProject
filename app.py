@@ -26,7 +26,7 @@ def update():
     followingManga = [x.strip("\n") for x in open("following.txt","r").readlines()]
     followingManga = list(set(followingManga))
     manga = [blogtruyen.Manga(x) for x in followingManga if "blogtruyen" in x]
-    manga = sorted(manga, key = lambda x: datetime.strptime(x.chapterList[0]["date"], "%d/%m/%Y %H:%M"), reverse = True)
+    manga = sorted(manga, key = lambda x: datetime.strptime(x.lastUpdate, "%d/%m/%Y %H:%M"), reverse = True)
     with open("following.txt","w") as f:
         for x in manga:
             f.write(x.url+"\n")
@@ -48,7 +48,7 @@ def mangaInfo(mangaId):
 
 @app.route("/read/<chapterId>")
 def read(chapterId):
-    url = "https://blogtruyen.com/" + chapterId+ "/thisisfiller"
+    url = "https://blogtruyen.com/" + chapterId.replace("-","/",1)
     thisChapter = blogtruyen.Chapter(url)
     return render_template("read.html", chapter = thisChapter)
 @app.route("/update")
@@ -61,8 +61,8 @@ def addManga():
         newUrl = request.form["mangaUrl"]
         if("blogtruyen" in newUrl):
             with open("following.txt", "a") as f:
-                f.write("\n")
                 f.write(newUrl)
+                f.write("\n")
             return render_template("add.html", status = 2)
         return render_template("add.html", status = 1)
     return render_template("add.html", status = 0)

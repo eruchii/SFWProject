@@ -9,11 +9,40 @@
 	<div class = "container">
 		<div class="col-12 ml-auto">
 			<div class="row">
-				<h4>{{ chapter.name }}</h4>
+				<div class = "col-12">
+					<h4>{{ chapter.name }}</h4>
+				</div>
+				<div class="listchapter d-flex justify-content-around col-12">
+					{% if chapter.prevChapter != None %}
+					<a href="{{url_for('read', chapterId = chapter.prevChapter)}}" class="btn btn-info" role="button">Previous Chapter</a>
+					{% else %}
+					<a href="#" class="btn btn-info disabled" role="button">Previous Chapter</a>
+					{% endif %}
+					
+					{% if chapter.nextChapter != None %}
+					<a href="{{url_for('read', chapterId = chapter.nextChapter)}}" class="btn btn-info" role="button">Next Chapter</a>
+					{% else %}
+					<a href="#" class="btn btn-info disabled" role="button">Next Chapter</a>
+					{% endif %}
+				</div>
+				<div class="col-12 d-block justify-content-center mt-3">
 					{% for img in chapter.images %}
-					<img class="mx-auto img-fluid d-block" src="{{img}}" />
+					<img class="mx-auto img-fluid img-display d-block" src="{{img}}" />
 					{% endfor %}
 				</div>
+				<div class="listchapter d-flex justify-content-around col-12 mt-3">
+						{% if chapter.prevChapter != None %}
+						<a href="{{url_for('read', chapterId = chapter.prevChapter)}}" class="btn btn-info" role="button">Previous Chapter</a>
+						{% else %}
+						<a href="#" class="btn btn-info disabled" role="button">Previous Chapter</a>
+						{% endif %}
+						
+						{% if chapter.nextChapter != None %}
+						<a href="{{url_for('read', chapterId = chapter.nextChapter)}}" class="btn btn-info" role="button">Next Chapter</a>
+						{% else %}
+						<a href="#" class="btn btn-info disabled" role="button">Next Chapter</a>
+						{% endif %}
+					</div>
 			</div>
 		</div>
 	</div>
