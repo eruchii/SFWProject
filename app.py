@@ -78,7 +78,7 @@ def run_server():
     update()
     app.jinja_env.auto_reload = True
     app.config['TEMPLATES_AUTO_RELOAD'] = True
-    http_server = WSGIServer(('0.0.0.0', 80), DebuggedApplication(app))
+    http_server = WSGIServer(('0.0.0.0', 8080), DebuggedApplication(app))
     http_server.serve_forever()
 
 if __name__ == '__main__':
