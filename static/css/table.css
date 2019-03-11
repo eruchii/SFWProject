@@ -2,11 +2,9 @@ body {
   padding-top: 60px;
 }
 
-.portfolio-item {
-    margin-bottom: 30px; 
-}
 .img-home{
     max-height: 400px;
+    object-fit: contain;
 }
 
 .img-display{

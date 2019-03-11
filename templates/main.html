@@ -16,10 +16,11 @@
 				<div class="col-12">
 					<div class="row">
 						{% for i in range(column*4*(page-1), min(column*4*page,manga|length)) %}
-						<div class="col-3 portfolio-item">
+						<div class="col-3 mt-5">
 							<a href="{{ url_for('mangaInfo', mangaId = manga[i].id) }}">
-								<img class="card-img-top img-responsive img-home" src="{{manga[i].thumb}}" alt="">
+								<img class="card-img-top img-responsive h-100 img-home" src="{{manga[i].thumb}}" alt="">
 							</a>
+							<a href="{{ url_for('mangaInfo', mangaId = manga[i].id) }}">{{ manga[i].name }}</a>
 						</div>
 						{% endfor %}
 					</div>
