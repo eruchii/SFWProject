@@ -1,10 +1,14 @@
 body {
   padding-top: 60px;
+  background-color: rgb(48, 47, 47);
+  color: white;
 }
 
+table td, th{
+  color: white;
+}
 .img-home{
-    max-height: 400px;
-    object-fit: contain;
+  height: 400px;
 }
 
 .img-display{
@@ -17,4 +21,14 @@ body {
 
 .pagination{
   padding-top: 30px;
+}
+
+.img-thumb{
+  height: 400px;
+  max-width: 400px;
+  object-fit: contain;
+}
+
+.dark-card{
+  background-color: rgb(48, 47, 47);
 }
