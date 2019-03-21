@@ -22,7 +22,7 @@
 						{% for i in range(column*4*(page-1), min(column*4*page,manga|length)) %}
 						<div class="col-3 mt-4 card dark-card">
 							<a href="{{ url_for('mangaInfo', mangaId = manga[i].id) }}">
-								<img class="img-fluid img-home card-img-top pt-3" src="{{manga[i].thumb}}"/>
+								<img class="img-fluid img-home card-img-top pt-3 mx-auto d-block" src="{{manga[i].thumb}}"/>
 							</a>
 							<div class="card-body">
 								<a href="{{ url_for('mangaInfo', mangaId = manga[i].id) }}">{{ manga[i].name }}</a>

@@ -8,7 +8,9 @@ table td, th{
   color: white;
 }
 .img-home{
-  height: 30vw;
+  height: 30vw; 
+  width: auto;
+  object-fit: contain;
 }
 
 .img-display{
