@@ -2,7 +2,7 @@ import requests
 from bs4 import BeautifulSoup
 import os
 import codecs
-
+import time
 class Chapter:
     def __init__(self, url):
         self.url = url
@@ -42,7 +42,7 @@ class Manga:
         self.thumb = self.soup.find("meta", property="og:image")["content"]
         self.id = url.split("/")[3]
         self.chapterCount = len(self.chapterList)
-        self.lastUpdate = self.soup.find("span", class_="color-green").string
+        self.lastUpdate = self.chapterList[0]["date"]
     def getChapterList(self):
         pF = self.soup.find("div", id = "list-chapters").findAll("p")
         lst = [ {'id': x.find("a")["href"].split("/")[1],'name':x.find("a")["title"], 'url':x.find("a")["href"].replace("/","-")[1:], 'date':x.find("span", class_='publishedDate').string} for x in pF]
