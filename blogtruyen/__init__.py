@@ -37,16 +37,18 @@ class Manga:
     def __init__(self, url):
         global soup
         self.url = url
+        start = time.time()
         headers = {'user-agent':'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/69.0.3497.100 Safari/537.36'}
         success = 0
         while not success:
             try:
-                request = requests.get(url, headers = headers)
+                request = requests.get(url, timeout = 2.5, headers = headers)
             except (requests.exceptions.ConnectionError, requests.exceptions.Timeout, requests.exceptions.ChunkedEncodingError):
-                pass
+                print("Retrying "+self.url)
             else:
                 success = 1
         soup = BeautifulSoup(request.content, "html.parser")
+        self.time = time.time() - start
         self.chapterList = self.getChapterList()
         self.name = soup.title.string.replace(" | BlogTruyen.Com","")
         self.thumb = soup.find("meta", property="og:image")["content"]

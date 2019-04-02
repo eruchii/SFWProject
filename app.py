@@ -23,14 +23,15 @@ global manga
 manga = []
 global IDs 
 
-maxthreads = 8
+maxthreads = 12
 sema = Semaphore(value=maxthreads)
 
 def multithreadRequest(url):
     sema.acquire()
     start = time.time()
-    manga.append(blogtruyen.Manga(url))
-    print("%s: %f" % (url, time.time()-start))
+    m = blogtruyen.Manga(url)
+    manga.append(m)
+    print("%s: %f" % (url, m.time))
     sema.release()
 
 def update():
