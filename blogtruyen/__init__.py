@@ -33,18 +33,29 @@ class Chapter:
         return self.soup.find("h1").text
 
 class Manga:
+    global soup
     def __init__(self, url):
+        global soup
         self.url = url
-        self.request = requests.get(url)
-        self.soup = BeautifulSoup(self.request.content, "html.parser")
+        headers = {'user-agent':'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/69.0.3497.100 Safari/537.36'}
+        success = 0
+        while not success:
+            try:
+                request = requests.get(url, headers = headers)
+            except (requests.exceptions.ConnectionError, requests.exceptions.Timeout):
+                pass
+            else:
+                success = 1
+        soup = BeautifulSoup(request.content, "html.parser")
         self.chapterList = self.getChapterList()
-        self.name = self.soup.title.string.replace(" | BlogTruyen.Com","")
-        self.thumb = self.soup.find("meta", property="og:image")["content"]
+        self.name = soup.title.string.replace(" | BlogTruyen.Com","")
+        self.thumb = soup.find("meta", property="og:image")["content"]
         self.id = url.split("/")[3]
         self.chapterCount = len(self.chapterList)
         self.lastUpdate = self.chapterList[0]["date"]
     def getChapterList(self):
-        pF = self.soup.find("div", id = "list-chapters").findAll("p")
+        global soup
+        pF = soup.find("div", id = "list-chapters").findAll("p")
         lst = [ {'id': x.find("a")["href"].split("/")[1],'name':x.find("a")["title"], 'url':x.find("a")["href"].replace("/","-")[1:], 'date':x.find("span", class_='publishedDate').string} for x in pF]
         return lst
 
