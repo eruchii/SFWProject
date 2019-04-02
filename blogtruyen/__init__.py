@@ -42,7 +42,7 @@ class Manga:
         while not success:
             try:
                 request = requests.get(url, headers = headers)
-            except (requests.exceptions.ConnectionError, requests.exceptions.Timeout):
+            except (requests.exceptions.ConnectionError, requests.exceptions.Timeout, requests.exceptions.ChunkedEncodingError):
                 pass
             else:
                 success = 1
