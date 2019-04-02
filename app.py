@@ -13,21 +13,42 @@ import blogtruyen
 from datetime import datetime
 import sys
 import time
+import codecs
+from threading import Thread, Semaphore
 
 app = Flask(__name__)
 
 global followingManga
 global manga
+manga = []
 global IDs 
 
+maxthreads = 4
+sema = Semaphore(value=maxthreads)
+
+def multithreadRequest(url):
+    sema.acquire()
+    start = time.time()
+    manga.append(blogtruyen.Manga(url))
+    print("%s: %f" % (url, time.time()-start))
+    sema.release()
 
 def update():
     global followingManga
     global manga
+    manga = []
     global IDs
     followingManga = [x.strip("\n") for x in open("following.txt","r").readlines()]
     followingManga = list(set(followingManga))
-    manga = [blogtruyen.Manga(x) for x in followingManga if "blogtruyen" in x]
+    start = time.time()
+    threads = []
+    for x in followingManga:
+        t = Thread(target= multithreadRequest, args = (x,))
+        t.start()
+        threads.append(t)
+    for t in threads:
+        t.join()
+    print("total: %f" % (time.time()-start))
     manga = sorted(manga, key = lambda x: datetime.strptime(x.lastUpdate, "%d/%m/%Y %H:%M"), reverse = True)
     with open("following.txt","w") as f:
         for x in manga:
@@ -36,6 +57,15 @@ def update():
     for i in range(0, len(manga)):
         IDs[manga[i].id] = i
 app.jinja_env.globals.update(min=min)
+
+def exportJson():
+    followingManga = [x.strip("\n") for x in open("following.txt","r").readlines()]
+    followingManga = list(set(followingManga))
+    for x in followingManga:
+        print(x)
+        manga = blogtruyen.Manga(x)
+        with codecs.open("./data/"+manga.id+".json", "w", "utf-8") as f:
+            json.dump(manga.__dict__, f, indent = 4)
 
 @app.route("/")
 def main():
@@ -85,3 +115,4 @@ def run_server():
 
 if __name__ == '__main__':
 	run_with_reloader(run_server)
+#    exportJson()
