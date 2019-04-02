@@ -23,7 +23,7 @@ global manga
 manga = []
 global IDs 
 
-maxthreads = 4
+maxthreads = 8
 sema = Semaphore(value=maxthreads)
 
 def multithreadRequest(url):
