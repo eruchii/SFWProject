@@ -42,7 +42,7 @@ class Manga:
         success = 0
         while not success:
             try:
-                request = requests.get(url, timeout = 2.5, headers = headers)
+                request = requests.get(url, timeout = 5, headers = headers)
             except (requests.exceptions.ConnectionError, requests.exceptions.Timeout, requests.exceptions.ChunkedEncodingError):
                 print("Retrying "+self.url)
             else:
@@ -52,6 +52,8 @@ class Manga:
         self.chapterList = self.getChapterList()
         self.name = soup.title.string.replace(" | BlogTruyen.Com","")
         self.thumb = soup.find("meta", property="og:image")["content"]
+        if("http" not in self.thumb):
+            self.thumb = "https://img.blogtruyen.com"+self.thumb
         self.id = url.split("/")[3]
         self.chapterCount = len(self.chapterList)
         self.lastUpdate = self.chapterList[0]["date"]
