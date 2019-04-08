@@ -50,10 +50,12 @@ def update():
     for t in threads:
         t.join()
     print("total: %f" % (time.time()-start))
-    manga = sorted(manga, key = lambda x: datetime.strptime(x.lastUpdate, "%d/%m/%Y %H:%M"), reverse = True)
+    manga = sorted(manga, key = lambda x: int(x.url.split("/")[3]))
     with open("following.txt","w") as f:
         for x in manga:
             f.write(x.url+"\n")
+    manga = sorted(manga, key = lambda x: datetime.strptime(x.lastUpdate, "%d/%m/%Y %H:%M"), reverse = True)
+    
     IDs = {}
     for i in range(0, len(manga)):
         IDs[manga[i].id] = i
