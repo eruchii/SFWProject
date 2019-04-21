@@ -15,6 +15,7 @@ import sys
 import time
 import codecs
 from threading import Thread, Semaphore
+import base64
 
 app = Flask(__name__)
 
@@ -25,6 +26,11 @@ global IDs
 
 maxthreads = 12
 sema = Semaphore(value=maxthreads)
+global cookie
+cookie = {
+	"_ga":"GA1.2.2054448878.1553762453",
+	"btpop1":"Popunder"
+}
 
 def multithreadRequest(url):
     sema.acquire()
@@ -33,6 +39,28 @@ def multithreadRequest(url):
     manga.append(m)
     print("%s: %f" % (url, m.time))
     sema.release()
+
+def encodeImageUrl(url):
+    return base64.b64encode(url.encode("utf-8")).decode("utf-8")
+
+@app.route("/stream/<base64Url>")
+def streamImage(base64Url):
+    dUrl = base64.b64decode(base64Url).decode("utf-8")
+    cookies = {
+	"__cfduid":"d3750ed1feee91e95c77f9ef76cb4a1701552046450",
+	"_ga":"GA1.2.2054448878.1553762453",
+	"btpop1":"Popunder"
+    }
+    r = requests.get(dUrl, cookies = cookies)
+    filename = dUrl.split("/")[-1]
+    response = make_response(r.content)
+    if(".png" in dUrl):
+        response.headers.set('Content-Type', 'image/png')
+    else:
+        if(".jpg" in dUrl or ".jpeg" in dUrl):
+            response.headers.set('Content-Type', 'image/jpeg')
+    response.headers.set('Content-Disposition', 'inline', filename='%s' % filename)
+    return response
 
 def update():
     global followingManga
@@ -51,6 +79,9 @@ def update():
         t.join()
     print("total: %f" % (time.time()-start))
     manga = sorted(manga, key = lambda x: int(x.url.split("/")[3]))
+    for i in range(0, len(manga)):
+         if("img.blogtruyen.com" in manga[i].thumb or "i.blogtruyen.com" in manga[i].thumb):
+            manga[i].thumb = "/stream/%s" % encodeImageUrl(manga[i].thumb)
     with open("following.txt","w") as f:
         for x in manga:
             f.write(x.url+"\n")
@@ -70,9 +101,11 @@ def exportJson():
         with codecs.open("./data/"+manga.id+".json", "w", "utf-8") as f:
             json.dump(manga.__dict__, f, indent = 4)
 
+
 @app.route("/")
 def main():
     global manga
+    global cookie
     page = request.args.get("page",default=1,type=int)
     return render_template("main.html", manga = manga, page = page)
 
@@ -85,7 +118,11 @@ def mangaInfo(mangaId):
 def read(chapterId):
     url = "https://blogtruyen.com/" + chapterId.replace("-","/",1)
     thisChapter = blogtruyen.Chapter(url)
-    return render_template("read.html", chapter = thisChapter)
+    images = thisChapter.images
+    for i in range(0, len(images)):
+        if("img.blogtruyen.com" in images[i] or "i.blogtruyen.com" in images[i]):
+            images[i] = "/stream/%s" % encodeImageUrl(images[i])
+    return render_template("read.html", chapter = thisChapter, images = images)
 @app.route("/update")
 def updateNewManga():
     update()
@@ -101,7 +138,6 @@ def addManga():
             return render_template("add.html", status = 2)
         return render_template("add.html", status = 1)
     return render_template("add.html", status = 0)
-        
 
 
 @app.context_processor
