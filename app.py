@@ -46,12 +46,10 @@ def encodeImageUrl(url):
 @app.route("/stream/<base64Url>")
 def streamImage(base64Url):
     dUrl = base64.b64decode(base64Url).decode("utf-8")
-    cookies = {
-	"__cfduid":"d3750ed1feee91e95c77f9ef76cb4a1701552046450",
-	"_ga":"GA1.2.2054448878.1553762453",
-	"btpop1":"Popunder"
-    }
-    r = requests.get(dUrl, cookies = cookies)
+    s = requests.Session()
+    cookies = dict(s.get("https://blogtruyen.com").cookies)
+    headers = {"Referer" : "https://blogtruyen.com/"}
+    r = s.get(url = dUrl, headers = headers, cookies = cookies)
     filename = dUrl.split("/")[-1]
     response = make_response(r.content)
     if(".png" in dUrl):
