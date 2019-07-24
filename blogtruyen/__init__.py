@@ -3,10 +3,14 @@ from bs4 import BeautifulSoup
 import os
 import codecs
 import time
+
+from requests.packages.urllib3.exceptions import InsecureRequestWarning
+requests.packages.urllib3.disable_warnings(InsecureRequestWarning)
+
 class Chapter:
     def __init__(self, url):
         self.url = url
-        self.request = requests.get(url)
+        self.request = requests.get(url, verify = False, stream = True)
         self.soup = BeautifulSoup(self.request.content, "html.parser")
         self.name = self.getName()
         self.images = self.getImageList()
@@ -42,7 +46,7 @@ class Manga:
         success = 0
         while not success:
             try:
-                request = requests.get(url, timeout = 5, headers = headers)
+                request = requests.get(url, timeout = 5, headers = headers, verify = False, stream = True)
             except (requests.exceptions.ConnectionError, requests.exceptions.Timeout, requests.exceptions.ChunkedEncodingError):
                 print("Retrying "+self.url)
             else:

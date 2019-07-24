@@ -33,123 +33,139 @@ cookie = {
 }
 
 def multithreadRequest(url):
-    sema.acquire()
-    start = time.time()
-    m = blogtruyen.Manga(url)
-    manga.append(m)
-    print("%s: %f" % (url, m.time))
-    sema.release()
+	sema.acquire()
+	start = time.time()
+	m = blogtruyen.Manga(url)
+	manga.append(m)
+	print("%s: %f" % (url, m.time))
+	sema.release()
 
 def encodeImageUrl(url):
-    return base64.b64encode(url.encode("utf-8")).decode("utf-8")
+	return base64.b64encode(url.encode("utf-8")).decode("utf-8")
 
 @app.route("/stream/<base64Url>")
 def streamImage(base64Url):
-    dUrl = base64.b64decode(base64Url).decode("utf-8")
-    s = requests.Session()
-    cookies = dict(s.get("https://blogtruyen.com").cookies)
-    headers = {"Referer" : "https://blogtruyen.com/"}
-    r = s.get(url = dUrl, headers = headers, cookies = cookies)
-    filename = dUrl.split("/")[-1]
-    response = make_response(r.content)
-    if(".png" in dUrl):
-        response.headers.set('Content-Type', 'image/png')
-    else:
-        if(".jpg" in dUrl or ".jpeg" in dUrl):
-            response.headers.set('Content-Type', 'image/jpeg')
-    response.headers.set('Content-Disposition', 'inline', filename='%s' % filename)
-    return response
+	dUrl = base64.b64decode(base64Url).decode("utf-8")
+	filename = dUrl.split("/")[-1]
+	if(not os.path.exists("./img/"+base64Url)):
+		s = requests.Session()
+		cookies = dict(s.get("https://blogtruyen.com", verify = False).cookies)
+		headers = {"Referer" : "https://blogtruyen.com/"}
+		r = s.get(url = dUrl, headers = headers, cookies = cookies, verify = False)
+		with open("./img/"+base64Url,"wb") as f:
+			f.write(r.content)
+		response = make_response(r.content)
+		if(".png" in dUrl):
+			response.headers.set('Content-Type', 'image/png')
+		else:
+			if(".jpg" in dUrl or ".jpeg" in dUrl):
+				response.headers.set('Content-Type', 'image/jpeg')
+		response.headers.set('Content-Disposition', 'inline', filename='%s' % filename)
+		return response
+	else:
+		if(".png" in dUrl):
+			return send_from_directory("./img", filename = base64Url, mimetype="image/png", attachment_filename=filename)
+		else:
+			if(".jpg" in dUrl or ".jpeg" in dUrl):
+				return send_from_directory("./img", filename = base64Url, mimetype="image/jpeg", attachment_filename=filename)
+			else:
+				if(".gif" in dUrl):
+					return send_from_directory("./img", filename = base64Url, mimetype="image/gif", attachment_filename=filename)
 
 def update():
-    global followingManga
-    global manga
-    manga = []
-    global IDs
-    followingManga = [x.strip("\n") for x in open("following.txt","r").readlines()]
-    followingManga = list(set(followingManga))
-    start = time.time()
-    threads = []
-    for x in followingManga:
-        t = Thread(target= multithreadRequest, args = (x,))
-        t.start()
-        threads.append(t)
-    for t in threads:
-        t.join()
-    print("total: %f" % (time.time()-start))
-    manga = sorted(manga, key = lambda x: int(x.url.split("/")[3]))
-    for i in range(0, len(manga)):
-         if("img.blogtruyen.com" in manga[i].thumb or "i.blogtruyen.com" in manga[i].thumb):
-            manga[i].thumb = "/stream/%s" % encodeImageUrl(manga[i].thumb)
-    with open("following.txt","w") as f:
-        for x in manga:
-            f.write(x.url+"\n")
-    manga = sorted(manga, key = lambda x: datetime.strptime(x.lastUpdate, "%d/%m/%Y %H:%M"), reverse = True)
-    
-    IDs = {}
-    for i in range(0, len(manga)):
-        IDs[manga[i].id] = i
-app.jinja_env.globals.update(min=min)
+	global followingManga
+	global manga
+	manga = []
+	global IDs
+	followingManga = [x.strip("\n") for x in open("following.txt","r").readlines()]
+	followingManga = list(set(followingManga))
+	start = time.time()
+	threads = []
+	for x in followingManga:
+		t = Thread(target= multithreadRequest, args = (x,))
+		t.start()
+		threads.append(t)
+	for t in threads:
+		t.join()
+	print("total: %f" % (time.time()-start))
+	manga = sorted(manga, key = lambda x: int(x.url.split("/")[3]))
+	for i in range(0, len(manga)):
+		if("img.blogtruyen.com" in manga[i].thumb or "i.blogtruyen.com" in manga[i].thumb):
+			manga[i].thumb = "/stream/%s" % encodeImageUrl(manga[i].thumb)
+	with open("following.txt","w") as f:
+		for x in manga:
+			f.write(x.url+"\n")
+	manga = sorted(manga, key = lambda x: datetime.strptime(x.lastUpdate, "%d/%m/%Y %H:%M"), reverse = True)
+	
+	IDs = {}
+	for i in range(0, len(manga)):
+		IDs[manga[i].id] = i
+
 
 def exportJson():
-    followingManga = [x.strip("\n") for x in open("following.txt","r").readlines()]
-    followingManga = list(set(followingManga))
-    for x in followingManga:
-        print(x)
-        manga = blogtruyen.Manga(x)
-        with codecs.open("./data/"+manga.id+".json", "w", "utf-8") as f:
-            json.dump(manga.__dict__, f, indent = 4)
+	global manga
+	for x in manga:
+		with codecs.open("./data/"+x.id+".json", "w", "utf-8") as f:
+			json.dump(x.__dict__, f, indent = 4)
 
 
 @app.route("/")
 def main():
-    global manga
-    global cookie
-    page = request.args.get("page",default=1,type=int)
-    return render_template("main.html", manga = manga, page = page)
+	global manga
+	global cookie
+	page = request.args.get("page",default=1,type=int)
+	return render_template("main.html", manga = manga, page = page)
 
 @app.route("/manga/<mangaId>")
 def mangaInfo(mangaId):
-    thisManga = manga[IDs[mangaId]]
-    return render_template("manga.html", manga = thisManga)
+	thisManga = manga[IDs[mangaId]]
+	return render_template("manga.html", manga = thisManga)
 
 @app.route("/read/<chapterId>")
 def read(chapterId):
-    url = "https://blogtruyen.com/" + chapterId.replace("-","/",1)
-    thisChapter = blogtruyen.Chapter(url)
-    images = thisChapter.images
-    for i in range(0, len(images)):
-        if("img.blogtruyen.com" in images[i] or "i.blogtruyen.com" in images[i]):
-            images[i] = "/stream/%s" % encodeImageUrl(images[i])
-    return render_template("read.html", chapter = thisChapter, images = images)
+	url = "https://blogtruyen.com/" + chapterId.replace("-","/",1)
+	thisChapter = blogtruyen.Chapter(url)
+	images = thisChapter.images
+	for i in range(0, len(images)):
+		if("img.blogtruyen.com" in images[i] or "i.blogtruyen.com" in images[i]):
+			images[i] = "/stream/%s" % encodeImageUrl(images[i])
+	return render_template("read.html", chapter = thisChapter, images = images)
 @app.route("/update")
 def updateNewManga():
-    update()
-    return redirect(url_for("main"))
+	update()
+	return redirect(url_for("main"))
 @app.route("/add",methods=['GET','POST'])
 def addManga():
-    if request.method == "POST":
-        newUrl = request.form["mangaUrl"]
-        if("blogtruyen" in newUrl):
-            with open("following.txt", "a") as f:
-                f.write(newUrl)
-                f.write("\n")
-            return render_template("add.html", status = 2)
-        return render_template("add.html", status = 1)
-    return render_template("add.html", status = 0)
+	if request.method == "POST":
+		newUrl = request.form["mangaUrl"]
+		if("blogtruyen" in newUrl):
+			with open("following.txt", "a") as f:
+				f.write(newUrl)
+				f.write("\n")
+			return render_template("add.html", status = 2)
+		return render_template("add.html", status = 1)
+	return render_template("add.html", status = 0)
 
+@app.route("/clear")
+def clear_cache():
+	lst = os.listdir("./img")
+	for a in lst:
+		os.remove("./img/"+a)
+	return redirect(url_for("main"))
 
 @app.context_processor
 def infomation():
-    mangaPerColumn = 5
-    return dict(column = mangaPerColumn)
+	mangaPerColumn = 5
+	return dict(column = mangaPerColumn)
 
 def run_server():
-    update()
-    app.jinja_env.auto_reload = True
-    app.config['TEMPLATES_AUTO_RELOAD'] = True
-    http_server = WSGIServer(('0.0.0.0', 8080), DebuggedApplication(app))
-    http_server.serve_forever()
+	app.jinja_env.globals.update(min=min)
+	update()
+	# exportJson()
+	app.jinja_env.auto_reload = True
+	app.config['TEMPLATES_AUTO_RELOAD'] = True
+	http_server = WSGIServer(('0.0.0.0', 80), DebuggedApplication(app))
+	http_server.serve_forever()
 
 if __name__ == '__main__':
 	run_with_reloader(run_server)
-#    exportJson()
