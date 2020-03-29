@@ -23,22 +23,15 @@ global followingManga
 global manga
 manga = []
 global IDs 
+IDs = {}
 
-maxthreads = 12
+maxthreads = 100
 sema = Semaphore(value=maxthreads)
 global cookie
 cookie = {
 	"_ga":"GA1.2.2054448878.1553762453",
 	"btpop1":"Popunder"
 }
-
-def multithreadRequest(url):
-	sema.acquire()
-	start = time.time()
-	m = blogtruyen.Manga(url)
-	manga.append(m)
-	print("%s: %f" % (url, m.time))
-	sema.release()
 
 def encodeImageUrl(url):
 	return base64.b64encode(url.encode("utf-8")).decode("utf-8")
@@ -52,54 +45,58 @@ def streamImage(base64Url):
 		cookies = dict(s.get("https://blogtruyen.com", verify = False).cookies)
 		headers = {"Referer" : "https://blogtruyen.com/"}
 		r = s.get(url = dUrl, headers = headers, cookies = cookies, verify = False)
-		with open("./img/"+base64Url,"wb") as f:
+		with open(r"./img/"+base64Url,"wb") as f:
 			f.write(r.content)
 		response = make_response(r.content)
-		if(".png" in dUrl):
-			response.headers.set('Content-Type', 'image/png')
-		else:
-			if(".jpg" in dUrl or ".jpeg" in dUrl):
-				response.headers.set('Content-Type', 'image/jpeg')
+		# if(".png" in dUrl):
+		# 	response.headers.set('Content-Type', 'image/png')
+		# else:
+		# 	if(".jpg" in dUrl or ".jpeg" in dUrl):
+		# 		response.headers.set('Content-Type', 'image/jpeg')
 		response.headers.set('Content-Disposition', 'inline', filename='%s' % filename)
 		return response
 	else:
-		if(".png" in dUrl):
-			return send_from_directory("./img", filename = base64Url, mimetype="image/png", attachment_filename=filename)
-		else:
-			if(".jpg" in dUrl or ".jpeg" in dUrl):
-				return send_from_directory("./img", filename = base64Url, mimetype="image/jpeg", attachment_filename=filename)
-			else:
-				if(".gif" in dUrl):
-					return send_from_directory("./img", filename = base64Url, mimetype="image/gif", attachment_filename=filename)
+		return send_from_directory("./img", filename = base64Url, attachment_filename=filename)
+		# if(".png" in dUrl):
+		# 	return send_from_directory("./img", filename = base64Url, mimetype="image/png", attachment_filename=filename)
+		# else:
+		# 	if(".jpg" in dUrl or ".jpeg" in dUrl):
+		# 		return send_from_directory("./img", filename = base64Url, mimetype="image/jpeg", attachment_filename=filename)
+		# 	else:
+		# 		if(".gif" in dUrl):
+		# 			return send_from_directory("./img", filename = base64Url, mimetype="image/gif", attachment_filename=filename)
+
+def multithreadRequest(url):
+	sema.acquire()
+	global manga
+	global IDs
+	start = time.time()
+	m = blogtruyen.Manga(url)
+	manga.append(m)
+	print("%s: %f" % (url, m.time))
+	manga = sorted(manga, key = lambda x: datetime.strptime(x.lastUpdate, "%d/%m/%Y %H:%M"), reverse = True)
+	for i in range(0, len(manga)):
+		IDs[manga[i].id] = i
+	for i in range(0, len(manga)):
+		if("img.blogtruyen.com" in manga[i].thumb or "i.blogtruyen.com" in manga[i].thumb):
+			newThumb = encodeImageUrl(manga[i].thumb)
+			if(len(newThumb) < 256):
+				manga[i].thumb = "/stream/%s" % newThumb
+	sema.release()
 
 def update():
 	global followingManga
 	global manga
 	manga = []
-	global IDs
+	
 	followingManga = [x.strip("\n") for x in open("following.txt","r").readlines()]
-	followingManga = list(set(followingManga))
 	start = time.time()
 	threads = []
 	for x in followingManga:
 		t = Thread(target= multithreadRequest, args = (x,))
 		t.start()
 		threads.append(t)
-	for t in threads:
-		t.join()
 	print("total: %f" % (time.time()-start))
-	manga = sorted(manga, key = lambda x: int(x.url.split("/")[3]))
-	for i in range(0, len(manga)):
-		if("img.blogtruyen.com" in manga[i].thumb or "i.blogtruyen.com" in manga[i].thumb):
-			manga[i].thumb = "/stream/%s" % encodeImageUrl(manga[i].thumb)
-	with open("following.txt","w") as f:
-		for x in manga:
-			f.write(x.url+"\n")
-	manga = sorted(manga, key = lambda x: datetime.strptime(x.lastUpdate, "%d/%m/%Y %H:%M"), reverse = True)
-	
-	IDs = {}
-	for i in range(0, len(manga)):
-		IDs[manga[i].id] = i
 
 
 def exportJson():

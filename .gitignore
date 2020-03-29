@@ -112,6 +112,5 @@ dmypy.json
 
 # Pyre type checker
 .pyre/
-following.txt
 *.txt
-following.txt
+img/

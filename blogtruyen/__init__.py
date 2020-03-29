@@ -17,11 +17,11 @@ class Chapter:
         self.prevChapter = None
         self.nextChapter = None
         try:
-            self.nextChapter = self.soup.find("link", rel = "Next")["href"].replace("https://blogtruyen.com/","").replace("/","-")
+            self.prevChapter = "-".join(self.soup.find("link", rel = "Prev")["href"].replace("/","-").split("-")[3:])
         except:
             pass
         try:
-            self.prevChapter = self.soup.find("link", rel = "Prev")["href"].replace("https://blogtruyen.com/","").replace("/","-")
+            self.nextChapter = "-".join(self.soup.find("link", rel = "Next")["href"].replace("/","-").split("-")[3:])
         except:
             pass
 
@@ -44,11 +44,13 @@ class Manga:
         start = time.time()
         headers = {'user-agent':'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/69.0.3497.100 Safari/537.36'}
         success = 0
-        while not success:
+        count = 0
+        while not success and count <= 10:
             try:
                 request = requests.get(url, timeout = 5, headers = headers, verify = False, stream = True)
             except (requests.exceptions.ConnectionError, requests.exceptions.Timeout, requests.exceptions.ChunkedEncodingError):
                 print("Retrying "+self.url)
+                count = count + 1
             else:
                 success = 1
         soup = BeautifulSoup(request.content, "html.parser")
